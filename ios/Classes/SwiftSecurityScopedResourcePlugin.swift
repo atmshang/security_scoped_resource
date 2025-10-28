@@ -42,7 +42,12 @@ public class SwiftSecurityScopedResourcePlugin: NSObject, FlutterPlugin {
             }
             let url = URL(fileURLWithPath: dir, isDirectory: isDirectory)
             do {
-                let data = try url.bookmarkData(options: [.withSecurityScope],
+			    var bookmarkOptions: URL.BookmarkCreationOptions = []
+				#if os(macOS)
+				bookmarkOptions = .withSecurityScope
+				#endif
+				
+                let data = try url.bookmarkData(options: bookmarkOptions,
                                                 includingResourceValuesForKeys: nil,
                                                 relativeTo: nil)
                 result(FlutterStandardTypedData(bytes: data))
@@ -57,9 +62,14 @@ public class SwiftSecurityScopedResourcePlugin: NSObject, FlutterPlugin {
             }
             let data = rawData.data
             do {
+			    var bookmarkOptions: NSURL.BookmarkResolutionOptions = []
+				#if os(macOS)
+				bookmarkOptions = .withSecurityScope
+				#endif
+				
                 var isStale: ObjCBool = false
                 let url = try NSURL(resolvingBookmarkData: data,
-                                    options: [.withSecurityScope],
+                                    options: bookmarkOptions,
                                     relativeTo: nil,
                                     bookmarkDataIsStale: &isStale) as URL
                 let success = url.startAccessingSecurityScopedResource()
